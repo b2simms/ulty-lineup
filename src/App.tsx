@@ -1,6 +1,7 @@
 import { Routes, Route, Outlet, Link } from "react-router-dom";
 import LandingPage from "./LandingPage";
 import PlayerRoster from "./PlayerRoster";
+import PlayerLineup from "./PlayerLineup";
 
 export default function App() {
   return (
@@ -22,7 +23,7 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<LandingPage />} />
           <Route path="roster" element={<PlayerRoster />} />
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="lineup" element={<PlayerLineup />} />
 
           {/* Using path="*"" means "match anything", so this route
                 acts like a catch-all for URLs that we don't have explicit
@@ -48,7 +49,7 @@ function Layout() {
             <Link to="/roster">Roster</Link>
           </li>
           <li>
-            <Link to="/dashboard">Dashboard</Link>
+            <Link to="/lineup">Line Up</Link>
           </li>
           <li>
             <Link to="/nothing-here">Nothing Here</Link>
@@ -62,14 +63,6 @@ function Layout() {
           so you can think about this <Outlet> as a placeholder for
           the child routes we defined above. */}
       <Outlet />
-    </div>
-  );
-}
-
-function Dashboard() {
-  return (
-    <div>
-      <h2>Dashboard</h2>
     </div>
   );
 }

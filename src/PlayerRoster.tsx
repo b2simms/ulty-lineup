@@ -101,7 +101,3 @@ const PlayerRoster: React.FC = () => {
 };
 
 export default PlayerRoster;
-
-function usePlayerLineup(arg0: any) {
-  throw new Error('Function not implemented.');
-}

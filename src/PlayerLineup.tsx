@@ -4,18 +4,26 @@ import { Player } from './Player';
 import Button from "@mui/material/Button";
 import { selectPlayers } from './rosterSlice';
 import { store } from './store';
+import { TOTAL_PLAYERS_ON_FIELD } from './constants';
+
+interface LineupHistory {
+  players: Player[],
+  maleRatio: number,
+  countSinceLastRatioChange: number,
+}
 
 const usePlayerLineup = (roster: Player[]) => {
   const [players, setPlayers] = useState<Player[]>(roster);
   const [isFirstLine, setIsFirstLine] = useState(true);
   const [maleRatio, setMaleRatio] = useState(4);
-  const lineupHistoryRef = useRef<Player[]>([]);
+  const lineupHistoryRef = useRef<LineupHistory[]>([]);
   const [viewingHistory, setViewingHistory] = useState(false);
   const [countSinceLastRatioChange, setCountSinceLastRatioChange] = useState(1);
 
   useEffect(() => {
     const updatedLine = updateLineupFromRoster(players, roster);
     setPlayers(updatedLine);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roster]);
 
   function rotateLineup() {
@@ -29,7 +37,7 @@ const usePlayerLineup = (roster: Player[]) => {
       setIsFirstLine(false);
     } else {
       // rotate first seven players to back of line
-      frontPlayers = newLineup.splice(0, 7);
+      frontPlayers = newLineup.splice(0, TOTAL_PLAYERS_ON_FIELD);
       newLineup.push(...frontPlayers);
     }
 
@@ -37,7 +45,7 @@ const usePlayerLineup = (roster: Player[]) => {
     const guysInLineup = newLineup.filter(player => player.gender === 'male');
     const girlsInLineup = newLineup.filter(player => player.gender === 'female');
 
-    const newFrontPlayers = [];
+    const newFrontPlayers: Player[] = [];
 
     // get current ratio
     let ratioChangeCount = countSinceLastRatioChange;
@@ -45,7 +53,7 @@ const usePlayerLineup = (roster: Player[]) => {
     if (isFirstLine) {
       ratioChangeCount = 2;
     } else {
-      if (isFirstLine || ratioChangeCount >= 2) {
+      if (ratioChangeCount >= 2) {
         ratioChangeCount = 1;
         mRatio = maleRatio === 4 ? 3 : 4;
       } else {
@@ -56,14 +64,14 @@ const usePlayerLineup = (roster: Player[]) => {
     // Add additional guys from the lineup
     let guyCount = 0;
     while (guyCount < mRatio && guysInLineup.length > 0) {
-      newFrontPlayers.push(guysInLineup.shift());
+      newFrontPlayers.push(guysInLineup.shift() as unknown as Player);
       guyCount++;
     }
 
     // Add additional girls from the lineup
     let girlCount = 0;
-    while (girlCount < (7 - mRatio) && girlsInLineup.length > 0) {
-      newFrontPlayers.push(girlsInLineup.shift());
+    while (girlCount < (TOTAL_PLAYERS_ON_FIELD - mRatio) && girlsInLineup.length > 0) {
+      newFrontPlayers.push(girlsInLineup.shift() as unknown as Player);
       girlCount++;
     }
 
@@ -72,7 +80,11 @@ const usePlayerLineup = (roster: Player[]) => {
     newFrontPlayers.push(...girlsInLineup);
 
     // Store the previous lineup in history
-    lineupHistoryRef.current.push([...players]);
+    lineupHistoryRef.current.push({
+      players: [...players],
+      maleRatio: mRatio,
+      countSinceLastRatioChange: ratioChangeCount,
+    });
     // set lineup
     setPlayers(newFrontPlayers);
 
@@ -84,9 +96,14 @@ const usePlayerLineup = (roster: Player[]) => {
     const history = lineupHistoryRef.current;
 
     if (history.length > 1) {
-      const previousLineup = history.pop();
+      const previousLineup = history.pop() as unknown as LineupHistory;
       setViewingHistory(true);
-      setPlayers(previousLineup);
+      setPlayers(previousLineup.players);
+
+      // peek as we already popped
+      const twoBack = history[history.length - 1];
+      setMaleRatio(twoBack.maleRatio);
+      setCountSinceLastRatioChange(twoBack.countSinceLastRatioChange);
     }
   }
 
@@ -122,13 +139,14 @@ const usePlayerLineup = (roster: Player[]) => {
     return updatedArray;
   }
 
-  return { players, rotateLineup, rotatePreviousLineup };
+  return { players, rotateLineup, rotatePreviousLineup, lineupHistoryRef, maleRatio, countSinceLastRatioChange };
 };
 
 const PlayerLineup: React.FC = () => {
-  const { players, rotateLineup, rotatePreviousLineup } = usePlayerLineup(selectPlayers(store.getState()));
-  const guysOnField = players.filter(player => player.gender === 'male').length;
-  const girlsOnField = players.length - guysOnField;
+  const { players, rotateLineup, rotatePreviousLineup, lineupHistoryRef, maleRatio, countSinceLastRatioChange } = usePlayerLineup(selectPlayers(store.getState()));
+  const playersOnField = players.slice(0, TOTAL_PLAYERS_ON_FIELD);
+  const guysOnField = playersOnField.filter(player => player.gender === 'male');
+  const girlsOnField = playersOnField.filter(player => player.gender === 'female');
 
   const [gameStarted, setGameStarted] = useState(false);
 
@@ -143,21 +161,21 @@ const PlayerLineup: React.FC = () => {
       {gameStarted &&
         <div>
           <h2>Gender Ratio on the Field</h2>
-          <p>Guys: {guysOnField}</p>
-          <p>Girls: {girlsOnField}</p>
+          <p>Guys: {guysOnField.length}</p>
+          <p>Girls: {girlsOnField.length}</p>
 
           <h2>Players on the Field</h2>
-          <h3>Male Players ({players.slice(0, 7).filter(player => player.gender === 'male').length})</h3>
+          <h3>Male Players ({guysOnField.length})</h3>
           <ul>
-            {players.slice(0, 7).filter(player => player.gender === 'male').map(player => (
+            {guysOnField.map(player => (
               <li key={player.name}>
                 {player.name} ({player.gender})
               </li>
             ))}
           </ul>
-          <h3>Female Players ({players.slice(0, 7).filter(player => player.gender === 'female').length})</h3>
+          <h3>Female Players ({girlsOnField.length})</h3>
           <ul>
-            {players.slice(0, 7).filter(player => player.gender === 'female').map(player => (
+            {girlsOnField.map(player => (
               <li key={player.name}>
                 {player.name} ({player.gender})
               </li>
@@ -166,6 +184,17 @@ const PlayerLineup: React.FC = () => {
 
           <Button variant="contained" onClick={rotateLineup}>Change Line</Button>
           <Button onClick={rotatePreviousLineup}>Undo Line Change</Button>
+
+          <h2>History</h2>
+          <h3>Male ratio: {maleRatio}</h3>
+          <h3>Count: {countSinceLastRatioChange}</h3>
+          <ul>
+            {lineupHistoryRef.current.map(h => (
+              <li key={Math.random() + '12335'}>
+                players: {h.players.length}, maleRatio: {h.maleRatio}, count: {h.countSinceLastRatioChange}
+              </li>
+            ))}
+          </ul>
         </div>
       }
     </div>
