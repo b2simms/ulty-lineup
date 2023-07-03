@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Player } from './Player';
 
+import Button from "@mui/material/Button";
+import { selectPlayers } from './rosterSlice';
+import { store } from './store';
+
 const usePlayerLineup = (roster: Player[]) => {
   const [players, setPlayers] = useState<Player[]>(roster);
   const [isFirstLine, setIsFirstLine] = useState(true);
@@ -121,12 +125,8 @@ const usePlayerLineup = (roster: Player[]) => {
   return { players, rotateLineup, rotatePreviousLineup };
 };
 
-type PlayerLineupProps = {
-  roster: Player[];
-};
-
-const PlayerLineup: React.FC<PlayerLineupProps> = ({ roster }) => {
-  const { players, rotateLineup, rotatePreviousLineup } = usePlayerLineup(roster);
+const PlayerLineup: React.FC = () => {
+  const { players, rotateLineup, rotatePreviousLineup } = usePlayerLineup(selectPlayers(store.getState()));
   const guysOnField = players.filter(player => player.gender === 'male').length;
   const girlsOnField = players.length - guysOnField;
 
@@ -139,7 +139,7 @@ const PlayerLineup: React.FC<PlayerLineupProps> = ({ roster }) => {
 
   return (
     <div>
-      {!gameStarted && <button onClick={startGame}>Start Game</button>}
+      {!gameStarted && <Button color="primary" variant="contained" onClick={startGame}>Start Game</Button>}
       {gameStarted &&
         <div>
           <h2>Gender Ratio on the Field</h2>
@@ -164,8 +164,8 @@ const PlayerLineup: React.FC<PlayerLineupProps> = ({ roster }) => {
             ))}
           </ul>
 
-          <button onClick={rotateLineup}>Change Line</button>
-          <button onClick={rotatePreviousLineup}>Undo Line Change</button>
+          <Button variant="contained" onClick={rotateLineup}>Change Line</Button>
+          <Button onClick={rotatePreviousLineup}>Undo Line Change</Button>
         </div>
       }
     </div>
