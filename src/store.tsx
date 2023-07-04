@@ -1,10 +1,10 @@
 import { configureStore, combineSlices } from "@reduxjs/toolkit";
-import counterReducer from "./counterSlice";
 import rosterReducer from "./rosterSlice";
+import gameReducer from "./gameSlice";
 
 const staticReducers = {
-  counter: counterReducer,
   roster: rosterReducer,
+  game: gameReducer,
 };
 
 export const dynamicReducer =

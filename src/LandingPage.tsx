@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { Button, Container, TextField } from '@mui/material';
-import { useAppSelector, useAppDispatch } from './hooks';
-import { decrement, increment } from './counterSlice';
 import { useNavigate } from 'react-router-dom';
 
 interface FormData {
@@ -16,9 +14,6 @@ function LandingPage() {
         userTeam: '',
         opponentTeam: '',
     });
-    // The `state` arg is correctly typed as `RootState` already
-    const count = useAppSelector((state) => state.counter.value)
-    const dispatch = useAppDispatch()
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -35,14 +30,6 @@ function LandingPage() {
         navigate("/roster");
     };
 
-    const handleUp = () => {
-        dispatch(increment());
-    }
-
-    const handleDown = () => {
-        dispatch(decrement());
-    }
-
     return (
         <Container sx={{
             display: 'flex',
@@ -51,25 +38,6 @@ function LandingPage() {
             justifyContent: 'center',
             height: '100vh',
         }}>
-            <p>
-                Count: {count}
-            </p>
-            <Button
-                onClick={handleUp}
-                sx={{
-                    marginTop: '1rem',
-                }}
-            >
-                Up!
-            </Button>
-            <Button
-                onClick={handleDown}
-                sx={{
-                    marginTop: '1rem',
-                }}
-            >
-                Down!
-            </Button>
             <TextField
                 label="Your team name"
                 name="userTeam"

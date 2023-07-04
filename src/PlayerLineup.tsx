@@ -1,200 +1,191 @@
-import { useEffect, useRef, useState } from 'react';
-import { Player } from './Player';
+import { useEffect } from 'react';
+import { GenderRatio, Player } from './Player';
 
 import Button from "@mui/material/Button";
 import { selectPlayers } from './rosterSlice';
-import { store } from './store';
 import { TOTAL_PLAYERS_ON_FIELD } from './constants';
+import { decrementPointsPlayed, incrementPointsPlayed, selectCountSinceLastRatioChange, selectCurrentGenderRatio, selectFemaleIndex, selectMaleIndex, selectPointsPlayed, selectStartingRatio, setCountSinceLastRatioChange, setCurrentGenderRatio, setFemaleIndex, setMaleIndex, setPointsPlayed, setStartingGenderRatio } from './gameSlice';
+import { useAppDispatch } from './hooks';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { useSelector } from 'react-redux';
 
-interface LineupHistory {
-  players: Player[],
-  maleRatio: number,
-  countSinceLastRatioChange: number,
+function getPlayersSubset(players: Player[], index: number, count: number): Player[] {
+  const length = players.length;
+  const startIndex = index % length;
+  const endIndex = (index + count) % length;
+
+  if (startIndex < endIndex) {
+    return players.slice(startIndex, endIndex);
+  } else {
+    return players.slice(startIndex).concat(players.slice(0, endIndex));
+  }
 }
 
-const usePlayerLineup = (roster: Player[]) => {
-  const [players, setPlayers] = useState<Player[]>(roster);
-  const [isFirstLine, setIsFirstLine] = useState(true);
-  const [maleRatio, setMaleRatio] = useState(4);
-  const lineupHistoryRef = useRef<LineupHistory[]>([]);
-  const [viewingHistory, setViewingHistory] = useState(false);
-  const [countSinceLastRatioChange, setCountSinceLastRatioChange] = useState(1);
+function getNextIndex(max: number, index: number, count: number): number {
+  return (index + count) % max;
+}
 
-  useEffect(() => {
-    const updatedLine = updateLineupFromRoster(players, roster);
-    setPlayers(updatedLine);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roster]);
+function getNextRatio(current: GenderRatio, count: number): {
+  ratio: GenderRatio, count: number
+} {
+  const flipRatio = (i: GenderRatio) => i === 'male' ? 'female' : 'male';
+  const newRatio = count >= 1 ? flipRatio(current) : current;
+  const newCount = count >= 1 ? 0 : count + 1;
+  return {
+    ratio: newRatio,
+    count: newCount,
+  };
+}
 
-  function rotateLineup() {
-    let newLineup = [...players];
-    if (viewingHistory) {
-      newLineup = updateLineupFromRoster(players, roster);
-    }
+function getPreviousIndex(max: number, index: number, count: number): number {
+  return (index - count + max) % max;
+}
 
-    let frontPlayers = newLineup;
-    if (isFirstLine) {
-      setIsFirstLine(false);
-    } else {
-      // rotate first seven players to back of line
-      frontPlayers = newLineup.splice(0, TOTAL_PLAYERS_ON_FIELD);
-      newLineup.push(...frontPlayers);
-    }
-
-    // Rotate the lineup while maintaining the correct gender ratio on the field
-    const guysInLineup = newLineup.filter(player => player.gender === 'male');
-    const girlsInLineup = newLineup.filter(player => player.gender === 'female');
-
-    const newFrontPlayers: Player[] = [];
-
-    // get current ratio
-    let ratioChangeCount = countSinceLastRatioChange;
-    let mRatio = maleRatio;
-    if (isFirstLine) {
-      ratioChangeCount = 2;
-    } else {
-      if (ratioChangeCount >= 2) {
-        ratioChangeCount = 1;
-        mRatio = maleRatio === 4 ? 3 : 4;
-      } else {
-        ratioChangeCount++;
-      }
-    }
-
-    // Add additional guys from the lineup
-    let guyCount = 0;
-    while (guyCount < mRatio && guysInLineup.length > 0) {
-      newFrontPlayers.push(guysInLineup.shift() as unknown as Player);
-      guyCount++;
-    }
-
-    // Add additional girls from the lineup
-    let girlCount = 0;
-    while (girlCount < (TOTAL_PLAYERS_ON_FIELD - mRatio) && girlsInLineup.length > 0) {
-      newFrontPlayers.push(girlsInLineup.shift() as unknown as Player);
-      girlCount++;
-    }
-
-    // add bench players
-    newFrontPlayers.push(...guysInLineup);
-    newFrontPlayers.push(...girlsInLineup);
-
-    // Store the previous lineup in history
-    lineupHistoryRef.current.push({
-      players: [...players],
-      maleRatio: mRatio,
-      countSinceLastRatioChange: ratioChangeCount,
-    });
-    // set lineup
-    setPlayers(newFrontPlayers);
-
-    setMaleRatio(mRatio);
-    setCountSinceLastRatioChange(ratioChangeCount);
-  }
-
-  function rotatePreviousLineup() {
-    const history = lineupHistoryRef.current;
-
-    if (history.length > 1) {
-      const previousLineup = history.pop() as unknown as LineupHistory;
-      setViewingHistory(true);
-      setPlayers(previousLineup.players);
-
-      // peek as we already popped
-      const twoBack = history[history.length - 1];
-      setMaleRatio(twoBack.maleRatio);
-      setCountSinceLastRatioChange(twoBack.countSinceLastRatioChange);
-    }
-  }
-
-  function updateLineupFromRoster(originalArray: Player[], modifiedArray: Player[]) {
-    // Create a copy of the original array
-    const updatedArray = [...originalArray];
-
-    // Iterate through each item in the modified array
-    modifiedArray.forEach(modifiedItem => {
-      // Check if the modified item exists in the original array
-      const index = updatedArray.findIndex(originalItem => originalItem.id === modifiedItem.id);
-
-      if (index === -1) {
-        // Item doesn't exist in the original array, so add it
-        updatedArray.push(modifiedItem);
-      } else {
-        // Item exists in the original array, so update it
-        updatedArray[index] = modifiedItem;
-      }
-    });
-
-    // Check for items in the original array that were not present in the modified array
-    originalArray.forEach(originalItem => {
-      const existsInModifiedArray = modifiedArray.some(modifiedItem => modifiedItem.id === originalItem.id);
-
-      if (!existsInModifiedArray) {
-        // Item doesn't exist in the modified array, so remove it
-        const index = updatedArray.findIndex(updatedItem => updatedItem.id === originalItem.id);
-        updatedArray.splice(index, 1);
-      }
-    });
-
-    return updatedArray;
-  }
-
-  return { players, rotateLineup, rotatePreviousLineup, lineupHistoryRef, maleRatio, countSinceLastRatioChange };
-};
+function getPreviousRatio(current: GenderRatio, count: number): {
+  ratio: GenderRatio, count: number
+} {
+  const flipRatio = (i: GenderRatio) => i === 'male' ? 'female' : 'male';
+  const newRatio = count >= 1 ? current : flipRatio(current);
+  const newCount = count < 1 ? 1 : count - 1;
+  return {
+    ratio: newRatio,
+    count: newCount,
+  };
+}
 
 const PlayerLineup: React.FC = () => {
-  const { players, rotateLineup, rotatePreviousLineup, lineupHistoryRef, maleRatio, countSinceLastRatioChange } = usePlayerLineup(selectPlayers(store.getState()));
-  const playersOnField = players.slice(0, TOTAL_PLAYERS_ON_FIELD);
-  const guysOnField = playersOnField.filter(player => player.gender === 'male');
-  const girlsOnField = playersOnField.filter(player => player.gender === 'female');
+  const dispatch = useAppDispatch();
+  const players = useSelector(selectPlayers);
+  const pointsPlayed = useSelector(selectPointsPlayed);
+  const startingRatio = useSelector(selectStartingRatio);
+  const maleIndex = useSelector(selectMaleIndex);
+  const femaleIndex = useSelector(selectFemaleIndex);
+  const currentRatio = useSelector(selectCurrentGenderRatio);
+  const countSinceLastRatioChange = useSelector(selectCountSinceLastRatioChange);
 
-  const [gameStarted, setGameStarted] = useState(false);
+  // split roster by gender
+  const males = players.filter(player => player.gender === 'male');
+  const females = players.filter(player => player.gender === 'female');
+  // determine ratio
+  const maleCount = currentRatio === 'male' ? 4 : 3;
+  // load players by gender index and ratio
+  const malesOnField = getPlayersSubset(males, maleIndex, maleCount);
+  const femalesOnField = getPlayersSubset(females, femaleIndex, TOTAL_PLAYERS_ON_FIELD - maleCount);
 
-  const startGame = () => {
-    rotateLineup();
-    setGameStarted(true);
+  const handleGenderChange = (_event: React.MouseEvent, value: GenderRatio) => {
+    if (value) {
+      dispatch(setStartingGenderRatio(value as GenderRatio));
+    }
+  };
+
+  useEffect(() => {
+    // initLineup(startingRatio);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleStartGame = () => {
+    dispatch(setPointsPlayed(0));
+    // determine starting ratio
+    dispatch(setCurrentGenderRatio(startingRatio));
+    dispatch(setCountSinceLastRatioChange(10)); // flip after first point
+    // reset indexes
+    dispatch(setMaleIndex(0));
+    dispatch(setFemaleIndex(0));
+  };
+
+  const handleResetGame = () => {
+    dispatch(setPointsPlayed(-1));
+
+    // determine starting ratio
+    dispatch(setCurrentGenderRatio(startingRatio));
+    // reset indexes
+    dispatch(setMaleIndex(0));
+    dispatch(setFemaleIndex(0));
+  };
+
+  const handleLineupChange = () => {
+    // increment points played
+    dispatch(incrementPointsPlayed());
+    // rotate ratio and indexes
+    const { ratio, count } = getNextRatio(currentRatio, countSinceLastRatioChange);
+    const maleRatio = ratio === 'male' ? 4 : 3;
+    const femaleRatio = TOTAL_PLAYERS_ON_FIELD - maleRatio;
+    dispatch(setCurrentGenderRatio(ratio));
+    dispatch(setCountSinceLastRatioChange(count));
+    dispatch(setMaleIndex(getNextIndex(males.length, maleIndex, maleRatio)));
+    dispatch(setFemaleIndex(getNextIndex(females.length, femaleIndex, femaleRatio)));
+    // update score
+  };
+
+  const handleUndoLineupChange = () => {
+    // decrement points played
+    dispatch(decrementPointsPlayed());
+    // move indexes before calculating previous ratio
+    const oldMaleRatio = currentRatio === 'male' ? 4 : 3;
+    const oldFemaleRatio = TOTAL_PLAYERS_ON_FIELD - oldMaleRatio;
+    dispatch(setMaleIndex(getPreviousIndex(males.length, maleIndex, oldMaleRatio)));
+    dispatch(setFemaleIndex(getPreviousIndex(females.length, femaleIndex, oldFemaleRatio)));
+    // rotate ratio back
+    const { ratio, count } = getPreviousRatio(currentRatio, countSinceLastRatioChange);
+    dispatch(setCurrentGenderRatio(ratio));
+    dispatch(setCountSinceLastRatioChange(count));
+    // update score
   };
 
   return (
     <div>
-      {!gameStarted && <Button color="primary" variant="contained" onClick={startGame}>Start Game</Button>}
-      {gameStarted &&
+      {pointsPlayed < 0 && <div>
+        <Button color="primary" variant="contained" onClick={handleStartGame}>Start Game</Button>
+        <p>Starting Gender Ratio on the Field:</p>
+        <ToggleButtonGroup
+          color="primary"
+          value={startingRatio}
+          exclusive
+          onChange={handleGenderChange}
+          aria-label="Platform"
+        >
+          <ToggleButton value="female">Female</ToggleButton>
+          <ToggleButton value="male">Male</ToggleButton>
+        </ToggleButtonGroup>
+      </div>
+      }
+      {pointsPlayed >= 0 && <Button color="primary" variant="contained" onClick={handleResetGame}>Reset Game</Button>}
+      {pointsPlayed >= 0 &&
         <div>
+          <h2>Point #{pointsPlayed + 1}</h2>
           <h2>Gender Ratio on the Field</h2>
-          <p>Guys: {guysOnField.length}</p>
-          <p>Girls: {girlsOnField.length}</p>
+          <p>Guys: {malesOnField.length}</p>
+          <p>Girls: {femalesOnField.length}</p>
 
           <h2>Players on the Field</h2>
-          <h3>Male Players ({guysOnField.length})</h3>
+          <h3>Male Players ({malesOnField.length})</h3>
           <ul>
-            {guysOnField.map(player => (
+            {malesOnField.map(player => (
               <li key={player.name}>
                 {player.name} ({player.gender})
               </li>
             ))}
           </ul>
-          <h3>Female Players ({girlsOnField.length})</h3>
+          <h3>Female Players ({femalesOnField.length})</h3>
           <ul>
-            {girlsOnField.map(player => (
+            {femalesOnField.map(player => (
               <li key={player.name}>
                 {player.name} ({player.gender})
               </li>
             ))}
           </ul>
 
-          <Button variant="contained" onClick={rotateLineup}>Change Line</Button>
-          <Button onClick={rotatePreviousLineup}>Undo Line Change</Button>
+          <Button variant="contained" onClick={handleLineupChange}>Change Line</Button>
+          {pointsPlayed > 0 && <Button onClick={handleUndoLineupChange}>Undo Line Change</Button>}
 
-          <h2>History</h2>
-          <h3>Male ratio: {maleRatio}</h3>
-          <h3>Count: {countSinceLastRatioChange}</h3>
+          {/* <h2>History</h2>
           <ul>
             {lineupHistoryRef.current.map(h => (
               <li key={Math.random() + '12335'}>
                 players: {h.players.length}, maleRatio: {h.maleRatio}, count: {h.countSinceLastRatioChange}
               </li>
             ))}
-          </ul>
+          </ul> */}
         </div>
       }
     </div>

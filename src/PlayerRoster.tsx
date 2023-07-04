@@ -1,5 +1,4 @@
-import React from 'react';
-import { Player } from './Player';
+import React, { useState } from 'react';
 
 // MUI Components
 import Avatar from '@mui/material/Avatar';
@@ -17,21 +16,22 @@ import TextField from '@mui/material/TextField';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useAppDispatch } from './hooks';
 import { addPlayer, removePlayer, selectPlayers } from './rosterSlice';
-import { store } from './store';
+import { GenderRatio } from './Player';
+import { useSelector } from 'react-redux';
 
 const PlayerRoster: React.FC = () => {
-  const players = selectPlayers(store.getState());
+  const players = useSelector(selectPlayers);
   const dispatch = useAppDispatch();
 
-  const [newPlayerName, setNewPlayerName] = React.useState('');
-  const [newPlayerGender, setNewPlayerGender] = React.useState<'male' | 'female'>('male');
+  const [newPlayerName, setNewPlayerName] = useState('');
+  const [newPlayerGender, setNewPlayerGender] = useState<GenderRatio>('male');
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewPlayerName(event.target.value);
   };
 
-  const handleGenderChange = (event: SelectChangeEvent<"male" | "female">) => {
-    setNewPlayerGender(event.target.value as 'male' | 'female');
+  const handleGenderChange = (event: SelectChangeEvent<GenderRatio>) => {
+    setNewPlayerGender(event.target.value as GenderRatio);
   };
 
   const handleAddPlayer = () => {
