@@ -27,7 +27,7 @@ function LandingPage() {
         console.log('New game clicked!');
         console.log('User Team:', formData.userTeam);
         console.log('Opponent Team:', formData.opponentTeam);
-        navigate("/roster");
+        navigate("/lineup");
     };
 
     return (
@@ -65,10 +65,20 @@ function LandingPage() {
                 onClick={handleNewGame}
                 fullWidth
                 sx={{
-                    marginTop: '1rem',
+                    margin: '1rem',
                 }}
             >
                 New game
+            </Button>
+            <Button
+                variant="contained"
+                onClick={() => navigate("/roster")}
+                fullWidth
+                sx={{
+                    margin: '1rem',
+                }}
+            >
+                Edit Roster
             </Button>
         </Container>
     );

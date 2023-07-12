@@ -18,10 +18,12 @@ import { useAppDispatch } from './hooks';
 import { addPlayer, removePlayer, selectPlayers } from './rosterSlice';
 import { GenderRatio } from './Player';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const PlayerRoster: React.FC = () => {
   const players = useSelector(selectPlayers);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerGender, setNewPlayerGender] = useState<GenderRatio>('male');
@@ -52,6 +54,27 @@ const PlayerRoster: React.FC = () => {
 
   return (
     <div>
+      <Button
+        variant="contained"
+        onClick={() => navigate("/")}
+        fullWidth
+        sx={{
+          margin: '1rem',
+        }}
+      >
+        Home
+      </Button>
+      <Button
+        variant="contained"
+        onClick={() => navigate("/lineup")}
+        fullWidth
+        sx={{
+          margin: '1rem',
+        }}
+      >
+        Back to Game
+      </Button>
+
       <TextField
         id="outlined-basic"
         label="Player Name"
@@ -75,7 +98,15 @@ const PlayerRoster: React.FC = () => {
         </RadioGroup>
       </FormControl>
 
-      <Button variant="contained" onClick={handleAddPlayer}>Add Player</Button>
+      <Button
+        variant="contained"
+        onClick={handleAddPlayer}
+        sx={{
+          margin: '1rem',
+        }}
+      >
+        Add Player
+      </Button>
 
       <h2>Male Players ({players.filter(player => player.gender === 'male').length})</h2>
       <ul>

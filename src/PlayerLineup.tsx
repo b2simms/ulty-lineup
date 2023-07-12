@@ -8,6 +8,7 @@ import { decrementPointsPlayed, incrementPointsPlayed, selectCountSinceLastRatio
 import { useAppDispatch } from './hooks';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 function getPlayersSubset(players: Player[], index: number, count: number): Player[] {
   const length = players.length;
@@ -62,6 +63,7 @@ const PlayerLineup: React.FC = () => {
   const femaleIndex = useSelector(selectFemaleIndex);
   const currentRatio = useSelector(selectCurrentGenderRatio);
   const countSinceLastRatioChange = useSelector(selectCountSinceLastRatioChange);
+  const navigate = useNavigate();
 
   // split roster by gender
   const males = players.filter(player => player.gender === 'male');
@@ -134,6 +136,27 @@ const PlayerLineup: React.FC = () => {
 
   return (
     <div>
+      <Button
+        variant="contained"
+        onClick={() => navigate("/")}
+        fullWidth
+        sx={{
+          margin: '1rem',
+        }}
+      >
+        Home
+      </Button>
+      <Button
+        variant="contained"
+        onClick={() => navigate("/roster")}
+        fullWidth
+        sx={{
+          margin: '1rem',
+        }}
+      >
+        Edit Roster
+      </Button>
+
       {pointsPlayed < 0 && <div>
         <Button color="primary" variant="contained" onClick={handleStartGame}>Start Game</Button>
         <p>Starting Gender Ratio on the Field:</p>
@@ -177,15 +200,6 @@ const PlayerLineup: React.FC = () => {
 
           <Button variant="contained" onClick={handleLineupChange}>Change Line</Button>
           {pointsPlayed > 0 && <Button onClick={handleUndoLineupChange}>Undo Line Change</Button>}
-
-          {/* <h2>History</h2>
-          <ul>
-            {lineupHistoryRef.current.map(h => (
-              <li key={Math.random() + '12335'}>
-                players: {h.players.length}, maleRatio: {h.maleRatio}, count: {h.countSinceLastRatioChange}
-              </li>
-            ))}
-          </ul> */}
         </div>
       }
     </div>
