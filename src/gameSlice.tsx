@@ -1,11 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { GenderRatio } from './Player';
+import { GenderRatio, ScoreTypes } from './Player';
+import { PointOfSaleSharp } from '@mui/icons-material';
 
 // Define a type for the slice state
 interface GameState {
     score: {
         home: number,
         away: number,
+        history: ScoreTypes[],
     },
     pointsPlayed: number,
     homeTeam: string,
@@ -24,6 +26,7 @@ const initialState: GameState = storedGame ? JSON.parse(storedGame)
         score: {
             home: 0,
             away: 0,
+            history: [],
         },
         pointsPlayed: -1,
         homeTeam: '',
@@ -39,6 +42,15 @@ export const gameSlice = createSlice({
     name: 'game',
     initialState,
     reducers: {
+        resetGame: (state) => {
+            state.score.home = 0;
+            state.score.away = 0;
+            state.score.history = [];
+            state.pointsPlayed = -1;
+            state.maleIndex = 0;
+            state.femaleIndex = 0;
+            localStorage.setItem('game', JSON.stringify(state));
+        },
         incrementPointsPlayed: (state) => {
             state.pointsPlayed++;
             localStorage.setItem('game', JSON.stringify(state));
@@ -52,12 +64,20 @@ export const gameSlice = createSlice({
             state.pointsPlayed = points;
             localStorage.setItem('game', JSON.stringify(state));
         },
-        addScore: (state, action: PayloadAction<'home' | 'away'>) => {
+        addScore: (state, action: PayloadAction<ScoreTypes>) => {
             const team = action.payload;
             state.score[team]++;
+            state.score.history.push(team);
             localStorage.setItem('game', JSON.stringify(state));
         },
-        setScore: (state, action: PayloadAction<{ team: 'home' | 'away', score: number }>) => {
+        removeScore: (state) => {
+            const lastScoringTeam = state.score.history.pop();
+            if (lastScoringTeam) {
+                state.score[lastScoringTeam]--;
+            }
+            localStorage.setItem('game', JSON.stringify(state));
+        },
+        setScore: (state, action: PayloadAction<{ team: ScoreTypes, score: number }>) => {
             const { team, score } = action.payload;
             state.score[team] = score;
             localStorage.setItem('game', JSON.stringify(state));
@@ -115,7 +135,7 @@ export const gameSlice = createSlice({
 
 export const {
     addScore,
-    setScore,
+    removeScore,
     incrementPointsPlayed,
     decrementPointsPlayed,
     setPointsPlayed,
@@ -128,6 +148,7 @@ export const {
     setCountSinceLastRatioChange,
     setHomeTeam,
     setAwayTeam,
+    resetGame,
 } = gameSlice.actions;
 
 export const {

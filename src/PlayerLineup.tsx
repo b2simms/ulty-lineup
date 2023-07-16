@@ -1,15 +1,22 @@
-import { GenderRatio, Player } from './Player';
+import './PlayerLineup.css';
+
+import { GenderRatio, Player, ScoreTypes } from './Player';
 
 import Button from "@mui/material/Button";
 import { selectPlayers } from './rosterSlice';
 import { TOTAL_PLAYERS_ON_FIELD } from './constants';
 import {
+  addScore,
   decrementPointsPlayed,
   incrementPointsPlayed,
+  removeScore,
+  resetGame,
+  selectAwayScore,
   selectAwayTeam,
   selectCountSinceLastRatioChange,
   selectCurrentGenderRatio,
   selectFemaleIndex,
+  selectHomeScore,
   selectHomeTeam,
   selectMaleIndex,
   selectPointsPlayed,
@@ -24,9 +31,10 @@ import {
   setStartingGenderRatio,
 } from './gameSlice';
 import { useAppDispatch } from './hooks';
-import { Container, List, ListItem, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, Card, Container, List, ListItem, Modal, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 function getPlayersSubset(players: Player[], index: number, count: number): Player[] {
   const length = players.length;
@@ -81,9 +89,17 @@ const PlayerLineup: React.FC = () => {
   const femaleIndex = useSelector(selectFemaleIndex);
   const homeTeam = useSelector(selectHomeTeam);
   const awayTeam = useSelector(selectAwayTeam);
+  const homeScore = useSelector(selectHomeScore);
+  const awayScore = useSelector(selectAwayScore);
   const currentRatio = useSelector(selectCurrentGenderRatio);
   const countSinceLastRatioChange = useSelector(selectCountSinceLastRatioChange);
   const navigate = useNavigate();
+
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const [teamWhoScored, setTeamWhoScored] = useState<ScoreTypes>('home');
 
   // split roster by gender
   const males = players.filter(player => player.gender === 'male');
@@ -103,12 +119,16 @@ const PlayerLineup: React.FC = () => {
   const handleHomeTeamInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e?.target?.value) {
       dispatch(setHomeTeam(e.target.value));
+    } else {
+      dispatch(setHomeTeam(''));
     }
   };
 
   const handleAwayTeamInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e?.target?.value) {
       dispatch(setAwayTeam(e.target.value));
+    } else {
+      dispatch(setAwayTeam(''));
     }
   };
 
@@ -123,17 +143,13 @@ const PlayerLineup: React.FC = () => {
   };
 
   const handleResetGame = () => {
-    dispatch(setPointsPlayed(-1));
-
-    // determine starting ratio
-    dispatch(setCurrentGenderRatio(startingRatio));
-    // reset indexes
-    dispatch(setMaleIndex(0));
-    dispatch(setFemaleIndex(0));
+    dispatch(resetGame());
   };
 
   const handleLineupChange = () => {
+    handleClose();
     // increment points played
+    dispatch(addScore(teamWhoScored));
     dispatch(incrementPointsPlayed());
     // move indexes
     const oldMaleRatio = currentRatio === 'male' ? 4 : 3;
@@ -147,7 +163,6 @@ const PlayerLineup: React.FC = () => {
     const { ratio, count } = getNextRatio(currentRatio, countSinceLastRatioChange);
     dispatch(setCurrentGenderRatio(ratio));
     dispatch(setCountSinceLastRatioChange(count));
-    // update score
   };
 
   const handleUndoLineupChange = () => {
@@ -165,11 +180,18 @@ const PlayerLineup: React.FC = () => {
     dispatch(setMaleIndex(getPreviousIndex(males.length, maleIndex, maleRatio)));
     dispatch(setFemaleIndex(getPreviousIndex(females.length, femaleIndex, femaleRatio)));
     // update score
+    dispatch(removeScore());
   };
 
   const getPlayerIndex = (list: Player[], id: number): number => {
     return list.findIndex((p) => p.id === id) + 1;
   }
+
+  const handleTeamWhoScoredSelection = (_event: React.MouseEvent, value: ScoreTypes) => {
+    if (value) {
+      setTeamWhoScored(value);
+    }
+  };
 
   return (
     <div>
@@ -233,8 +255,17 @@ const PlayerLineup: React.FC = () => {
       </div>
       }
       {pointsPlayed >= 0 && <Button color="primary" variant="contained" onClick={handleResetGame}>Reset Game</Button>}
+      {pointsPlayed > 0 && <Button onClick={handleUndoLineupChange}>Undo Line Change</Button>}
       {pointsPlayed >= 0 &&
         <div>
+          <div className="scoreboard">
+            <div>
+              {homeTeam}: {homeScore}
+            </div>
+            <div>
+              {awayTeam}: {awayScore}
+            </div>
+          </div>
           <h2>Point #{pointsPlayed + 1}</h2>
           <Container
             disableGutters
@@ -242,7 +273,6 @@ const PlayerLineup: React.FC = () => {
               display: 'flex',
               width: '100%',
               flexDirection: 'row',
-              // alignItems: 'center',
               justifyContent: 'center',
             }}>
             <Container
@@ -255,7 +285,7 @@ const PlayerLineup: React.FC = () => {
               <strong>Male ({malesOnField.length})</strong>
               <List>
                 {malesOnField.map(player => (
-                  <ListItem>
+                  <ListItem key={player.id}>
                     {getPlayerIndex(males, player.id)}. {player.name}
                   </ListItem>
                 ))}
@@ -272,7 +302,7 @@ const PlayerLineup: React.FC = () => {
               <strong>Female ({femalesOnField.length})</strong>
               <List>
                 {femalesOnField.map(player => (
-                  <ListItem>
+                  <ListItem key={player.id}>
                     {getPlayerIndex(females, player.id)}. {player.name}
                   </ListItem>
                 ))}
@@ -280,12 +310,44 @@ const PlayerLineup: React.FC = () => {
             </Container>
           </Container>
 
-          <Button variant="contained" onClick={handleLineupChange}>Change Line</Button>
-          {pointsPlayed > 0 && <Button onClick={handleUndoLineupChange}>Undo Line Change</Button>}
+          <Button variant="contained" onClick={handleOpen}>Next Point</Button>
         </div>
       }
-    </div >
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Card sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          minWidth: "350px",
+          minHeight: "400px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}>
+          <h2>Who Scored?</h2>
+          <ToggleButtonGroup
+            color="primary"
+            value={teamWhoScored}
+            exclusive
+            onChange={handleTeamWhoScoredSelection}
+            aria-label="Platform"
+            sx={{ margin: "1em" }}
+          >
+            <ToggleButton value="home">{homeTeam}</ToggleButton>
+            <ToggleButton value="away">{awayTeam}</ToggleButton>
+          </ToggleButtonGroup>
+          <Button variant="contained" onClick={handleLineupChange}>Change Line</Button>
+        </Card>
+      </Modal>
+    </div>
   );
 };
 
 export default PlayerLineup;
+
