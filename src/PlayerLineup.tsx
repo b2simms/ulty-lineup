@@ -31,6 +31,7 @@ import {
   setStartingGenderRatio,
 } from './gameSlice';
 import { useAppDispatch } from './hooks';
+import CloseIcon from '@mui/icons-material/Close';
 import { Card, Container, List, ListItem, Modal, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -320,6 +321,7 @@ const PlayerLineup: React.FC = () => {
           flexDirection: "column",
           alignItems: "center",
         }}>
+          <CloseIcon onClick={handleClose} sx={{ position: "absolute", top: "1em", right: "1em" }}></CloseIcon>
           <h2>Who Scored?</h2>
           <ToggleButtonGroup
             color="primary"
@@ -332,7 +334,7 @@ const PlayerLineup: React.FC = () => {
             <ToggleButton value="home">{homeTeam}</ToggleButton>
             <ToggleButton value="away">{awayTeam}</ToggleButton>
           </ToggleButtonGroup>
-          <Button variant="contained" onClick={handleLineupChange}>Change Line</Button>
+          <Button variant="contained" onClick={handleLineupChange}>OK</Button>
         </Card>
       </Modal>
     </div>
