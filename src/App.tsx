@@ -1,5 +1,4 @@
 import { Routes, Route, Outlet, Link } from "react-router-dom";
-import LandingPage from "./LandingPage";
 import PlayerRoster from "./PlayerRoster";
 import PlayerLineup from "./PlayerLineup";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -21,9 +20,8 @@ export default function App() {
             parent route elements. See the note about <Outlet> below. */}
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route index element={<LandingPage />} />
+            <Route index path="" element={<PlayerLineup />} />
             <Route path="roster" element={<PlayerRoster />} />
-            <Route path="lineup" element={<PlayerLineup />} />
 
             {/* Using path="*"" means "match anything", so this route
                 acts like a catch-all for URLs that we don't have explicit

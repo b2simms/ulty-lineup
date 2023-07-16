@@ -66,16 +66,6 @@ const PlayerRoster: React.FC = () => {
           margin: '1rem 0',
         }}
       >
-        Home
-      </Button>
-      <Button
-        variant="contained"
-        onClick={() => navigate("/lineup")}
-        fullWidth
-        sx={{
-          margin: '1rem 0',
-        }}
-      >
         Back to Game
       </Button>
 

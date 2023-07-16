@@ -31,7 +31,7 @@ import {
   setStartingGenderRatio,
 } from './gameSlice';
 import { useAppDispatch } from './hooks';
-import { Box, Card, Container, List, ListItem, Modal, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Card, Container, List, ListItem, Modal, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -195,16 +195,6 @@ const PlayerLineup: React.FC = () => {
 
   return (
     <div>
-      <Button
-        variant="contained"
-        onClick={() => navigate("/")}
-        fullWidth
-        sx={{
-          margin: '1em 0',
-        }}
-      >
-        Home
-      </Button>
       <Button
         variant="contained"
         onClick={() => navigate("/roster")}
