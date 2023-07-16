@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { GenderRatio, ScoreTypes } from './Player';
-import { PointOfSaleSharp } from '@mui/icons-material';
 
 // Define a type for the slice state
 interface GameState {
