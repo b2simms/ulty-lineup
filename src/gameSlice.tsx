@@ -90,11 +90,21 @@ export const gameSlice = createSlice({
             state.countSinceLastRatioChange = action.payload;
             localStorage.setItem('game', JSON.stringify(state));
         },
+        setHomeTeam: (state, action: PayloadAction<string>) => {
+            state.homeTeam = action.payload;
+            localStorage.setItem('game', JSON.stringify(state));
+        },
+        setAwayTeam: (state, action: PayloadAction<string>) => {
+            state.awayTeam = action.payload;
+            localStorage.setItem('game', JSON.stringify(state));
+        },
     },
     selectors: {
         selectPointsPlayed: state => state.pointsPlayed,
         selectHomeScore: state => state.score.home,
         selectAwayScore: state => state.score.away,
+        selectHomeTeam: state => state.homeTeam,
+        selectAwayTeam: state => state.awayTeam,
         selectStartingRatio: state => state.startingRatio,
         selectCurrentGenderRatio: state => state.currentRatio,
         selectCountSinceLastRatioChange: state => state.countSinceLastRatioChange,
@@ -116,12 +126,16 @@ export const {
     incrementFemaleIndex,
     setFemaleIndex,
     setCountSinceLastRatioChange,
+    setHomeTeam,
+    setAwayTeam,
 } = gameSlice.actions;
 
 export const {
     selectPointsPlayed,
     selectHomeScore,
     selectAwayScore,
+    selectHomeTeam,
+    selectAwayTeam,
     selectStartingRatio,
     selectCountSinceLastRatioChange,
     selectFemaleIndex,
