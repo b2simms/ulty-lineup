@@ -118,15 +118,21 @@ const PlayerRoster: React.FC = () => {
         ))}
       </ul>
       <h2>Female Players ({players.filter(player => player.gender === 'female').length})</h2>
-      {players.filter(player => player.gender === 'female').map(player => (
-        <Chip
-          avatar={<Avatar>{player.name.charAt(0).toUpperCase()}</Avatar>}
-          label={player.name}
-          key={player.id}
-          onDelete={() => handleRemovePlayer(player.id)}
-          deleteIcon={<DeleteIcon />}
-        />
-      ))}
+      <ul>
+        {players.filter(player => player.gender === 'female').map(player => (
+          <li key={player.id}>
+            {player.name} ({player.gender})
+            <Button onClick={() => handleRemovePlayer(player.id)}>Remove</Button>
+          </li>
+          // <Chip
+          //   avatar={<Avatar>{player.name.charAt(0).toUpperCase()}</Avatar>}
+          //   label={player.name}
+          //   key={player.id}
+          //   onDelete={() => handleRemovePlayer(player.id)}
+          //   deleteIcon={<DeleteIcon />}
+          // />
+        ))}
+      </ul>
     </div>
   );
 };

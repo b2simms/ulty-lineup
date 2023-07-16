@@ -158,7 +158,6 @@ const PlayerLineup: React.FC = () => {
       </Button>
 
       {pointsPlayed < 0 && <div>
-        <Button color="primary" variant="contained" onClick={handleStartGame}>Start Game</Button>
         <p>Starting Gender Ratio on the Field:</p>
         <ToggleButtonGroup
           color="primary"
@@ -170,15 +169,17 @@ const PlayerLineup: React.FC = () => {
           <ToggleButton value="female">Female</ToggleButton>
           <ToggleButton value="male">Male</ToggleButton>
         </ToggleButtonGroup>
+        <br />
+        <Button color="primary" variant="contained" onClick={handleStartGame}>Start Game</Button>
       </div>
       }
       {pointsPlayed >= 0 && <Button color="primary" variant="contained" onClick={handleResetGame}>Reset Game</Button>}
       {pointsPlayed >= 0 &&
         <div>
           <h2>Point #{pointsPlayed + 1}</h2>
-          <h2>Gender Ratio on the Field</h2>
+          {/* <h2>Gender Ratio on the Field</h2>
           <p>Guys: {malesOnField.length}</p>
-          <p>Girls: {femalesOnField.length}</p>
+          <p>Girls: {femalesOnField.length}</p> */}
 
           <h2>Players on the Field</h2>
           <h3>Male Players ({malesOnField.length})</h3>
