@@ -209,8 +209,6 @@ const PlayerLineup: React.FC = () => {
     dispatch(toggleTheme());
   };
 
-  console.log(themeMode);
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: '350px', padding: '1em' }}>
       <Button

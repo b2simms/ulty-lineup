@@ -5,11 +5,7 @@ export type ThemeType = 'light' | 'dark';
 
 // Load initial state from storage
 const storedTheme = localStorage.getItem('theme');
-const initMode: ThemeType = storedTheme ? JSON.parse(storedTheme) : 'dark';
-
-const initialState = {
-    mode: initMode,
-}
+const initialState: { mode: ThemeType } = storedTheme ? JSON.parse(storedTheme) : { "mode": "dark" };
 
 export const themeSlice = createSlice({
     name: 'theme',
