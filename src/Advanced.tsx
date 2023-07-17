@@ -196,7 +196,7 @@ const PlayerLineup: React.FC = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', minWidth: '350px' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', minWidth: '350px', padding: '1em' }}>
       <Button
         variant="contained"
         onClick={() => navigate("/")}
@@ -216,6 +216,8 @@ const PlayerLineup: React.FC = () => {
       </Box>
 
       <br />
+
+      <h2 className='centerHeader'>Point #{pointsPlayed + 1}</h2>
 
       <Box sx={{ display: 'flex', flexDirection: 'row', margin: '1em 0' }}>
         <Box sx={{ display: 'flex', flex: '1', flexDirection: 'column' }}>
@@ -258,6 +260,8 @@ const PlayerLineup: React.FC = () => {
           }}
         />
 
+        <br />
+
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ display: 'flex', flexDirection: 'row' }}>
             <Box sx={{ display: 'flex', flex: '1' }}>
@@ -276,6 +280,7 @@ const PlayerLineup: React.FC = () => {
               </ToggleButtonGroup>
             </Box>
           </Box>
+          <br />
           <Box sx={{ display: 'flex', flexDirection: 'row' }}>
             <Box sx={{ display: 'flex', flex: '1' }}>
               <p>Gender Ratio Shift Count:</p>

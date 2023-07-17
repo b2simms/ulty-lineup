@@ -290,6 +290,7 @@ const PlayerLineup: React.FC = () => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          padding: '1em',
         }}>
           <CloseIcon onClick={handleClose} sx={{ position: "absolute", top: "1em", right: "1em" }}></CloseIcon>
           <h2>Who Scored?</h2>
@@ -304,7 +305,8 @@ const PlayerLineup: React.FC = () => {
             <ToggleButton value="home">{homeTeam}</ToggleButton>
             <ToggleButton value="away">{awayTeam}</ToggleButton>
           </ToggleButtonGroup>
-          <Button variant="contained" onClick={handleLineupChange}>OK</Button>
+          <br />
+          <Button variant="contained" fullWidth onClick={handleLineupChange} sx={{ height: '48px' }}>OK</Button>
         </Card>
       </Modal>
     </Box>
