@@ -4,16 +4,20 @@ import PlayerLineup from "./PlayerLineup";
 import Advanced from "./Advanced";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from '@mui/material/CssBaseline';
-
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-});
+import { useSelector } from "react-redux";
+import { selectThemeMode } from "./themeSlice";
 
 export default function App() {
+  const themeMode = useSelector(selectThemeMode);
+
+  const currentTheme = createTheme({
+    palette: {
+      mode: themeMode as never,
+    },
+  });
+
   return (
-    <ThemeProvider theme={darkTheme}>
+    <ThemeProvider theme={currentTheme}>
       <CssBaseline />
       <div>
         {/* Routes nest inside one another. Nested route paths build upon

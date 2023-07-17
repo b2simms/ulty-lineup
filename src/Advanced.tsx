@@ -5,6 +5,8 @@ import { GenderRatio, Player } from './Player';
 import Button from "@mui/material/Button";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { selectPlayers } from './rosterSlice';
 import { TOTAL_PLAYERS_ON_FIELD } from './constants';
 import {
@@ -31,10 +33,11 @@ import {
 } from './gameSlice';
 import { useAppDispatch } from './hooks';
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Card, Container, List, ListItem, Modal, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, Card, Container, IconButton, List, ListItem, Modal, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { selectThemeMode, toggleTheme } from './themeSlice';
 
 function getPlayersSubset(players: Player[], index: number, count: number): Player[] {
   const length = players.length;
@@ -76,6 +79,7 @@ const PlayerLineup: React.FC = () => {
   const awayScore = useSelector(selectAwayScore);
   const currentRatio = useSelector(selectCurrentGenderRatio);
   const countSinceLastRatioChange = useSelector(selectCountSinceLastRatioChange);
+  const themeMode = useSelector(selectThemeMode);
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
@@ -195,8 +199,14 @@ const PlayerLineup: React.FC = () => {
     return list.findIndex((p) => p.id === id) + 1;
   };
 
+  const handleToggleTheme = () => {
+    dispatch(toggleTheme());
+  };
+
+  console.log(themeMode);
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', minWidth: '350px', padding: '1em' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: '350px', padding: '1em' }}>
       <Button
         variant="contained"
         onClick={() => navigate("/")}
@@ -207,6 +217,10 @@ const PlayerLineup: React.FC = () => {
       >
         Back to Game
       </Button>
+
+      <IconButton sx={{ ml: 1 }} onClick={handleToggleTheme} color="inherit">
+        {themeMode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+      </IconButton>
 
       <br />
 
