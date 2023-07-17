@@ -7,10 +7,7 @@ import { selectPlayers } from './rosterSlice';
 import { TOTAL_PLAYERS_ON_FIELD } from './constants';
 import {
   addScore,
-  decrementPointsPlayed,
   incrementPointsPlayed,
-  removeScore,
-  resetGame,
   selectAwayScore,
   selectAwayTeam,
   selectCountSinceLastRatioChange,
@@ -32,7 +29,7 @@ import {
 } from './gameSlice';
 import { useAppDispatch } from './hooks';
 import CloseIcon from '@mui/icons-material/Close';
-import { Card, Container, List, ListItem, Modal, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, Card, Chip, Container, Divider, List, ListItem, Modal, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -59,22 +56,6 @@ function getNextRatio(current: GenderRatio, count: number): {
   const flipRatio = (i: GenderRatio) => i === 'male' ? 'female' : 'male';
   const newRatio = count >= 1 ? flipRatio(current) : current;
   const newCount = count >= 1 ? 0 : count + 1;
-  return {
-    ratio: newRatio,
-    count: newCount,
-  };
-}
-
-function getPreviousIndex(max: number, index: number, count: number): number {
-  return (index - count + max) % max;
-}
-
-function getPreviousRatio(current: GenderRatio, count: number): {
-  ratio: GenderRatio, count: number
-} {
-  const flipRatio = (i: GenderRatio) => i === 'male' ? 'female' : 'male';
-  const newRatio = count >= 1 ? current : flipRatio(current);
-  const newCount = count < 1 ? 1 : count - 1;
   return {
     ratio: newRatio,
     count: newCount,
@@ -137,14 +118,10 @@ const PlayerLineup: React.FC = () => {
     dispatch(setPointsPlayed(0));
     // determine starting ratio
     dispatch(setCurrentGenderRatio(startingRatio));
-    dispatch(setCountSinceLastRatioChange(10)); // flip after first point
+    dispatch(setCountSinceLastRatioChange(1)); // flip after first point
     // reset indexes
     dispatch(setMaleIndex(0));
     dispatch(setFemaleIndex(0));
-  };
-
-  const handleResetGame = () => {
-    dispatch(resetGame());
   };
 
   const handleLineupChange = () => {
@@ -166,24 +143,6 @@ const PlayerLineup: React.FC = () => {
     dispatch(setCountSinceLastRatioChange(count));
   };
 
-  const handleUndoLineupChange = () => {
-    // decrement points played
-    dispatch(decrementPointsPlayed());
-
-    // rotate ratio back
-    const { ratio, count } = getPreviousRatio(currentRatio, countSinceLastRatioChange);
-    dispatch(setCurrentGenderRatio(ratio));
-    dispatch(setCountSinceLastRatioChange(count));
-
-    // move indexes before calculating previous ratio
-    const maleRatio = ratio === 'male' ? 4 : 3;
-    const femaleRatio = TOTAL_PLAYERS_ON_FIELD - maleRatio;
-    dispatch(setMaleIndex(getPreviousIndex(males.length, maleIndex, maleRatio)));
-    dispatch(setFemaleIndex(getPreviousIndex(females.length, femaleIndex, femaleRatio)));
-    // update score
-    dispatch(removeScore());
-  };
-
   const getPlayerIndex = (list: Player[], id: number): number => {
     return list.findIndex((p) => p.id === id) + 1;
   }
@@ -195,115 +154,126 @@ const PlayerLineup: React.FC = () => {
   };
 
   return (
-    <div>
-      <Button
-        variant="contained"
-        onClick={() => navigate("/roster")}
-        fullWidth
-        sx={{
-          margin: '1em 0',
-        }}
-      >
-        Edit Roster
-      </Button>
-
-      {pointsPlayed < 0 && <div>
-        <TextField
-          label="Your team name"
-          name="userTeam"
-          value={homeTeam}
-          onChange={handleHomeTeamInputChange}
-          fullWidth
-          margin="normal"
-          sx={{
-            marginBottom: '1rem',
-          }}
-        />
-        <TextField
-          label="Opponent's team name"
-          name="opponentTeam"
-          value={awayTeam}
-          onChange={handleAwayTeamInputChange}
-          fullWidth
-          margin="normal"
-          sx={{
-            marginBottom: '1rem',
-          }}
-        />
-        <p>Starting Gender Ratio on the Field:</p>
-        <ToggleButtonGroup
-          color="primary"
-          value={startingRatio}
-          exclusive
-          onChange={handleGenderChange}
-          aria-label="Platform"
-        >
-          <ToggleButton value="female">Female</ToggleButton>
-          <ToggleButton value="male">Male</ToggleButton>
-        </ToggleButtonGroup>
-        <br />
-        <Button color="primary" variant="contained" onClick={handleStartGame}>Start Game</Button>
-      </div>
-      }
-      {pointsPlayed >= 0 && <Button color="primary" variant="contained" onClick={handleResetGame}>Reset Game</Button>}
-      {pointsPlayed > 0 && <Button onClick={handleUndoLineupChange}>Undo Line Change</Button>}
-      {pointsPlayed >= 0 &&
-        <div>
-          <div className="scoreboard">
-            <div>
-              {homeTeam}: {homeScore}
-            </div>
-            <div>
-              {awayTeam}: {awayScore}
-            </div>
-          </div>
-          <h2>Point #{pointsPlayed + 1}</h2>
-          <Container
-            disableGutters
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', minWidth: '350px' }}>
+      <Box sx={{ display: 'flex', flex: '3', flexDirection: 'column' }}>
+        {pointsPlayed < 0 && <div>
+          <TextField
+            label="Your team name"
+            name="userTeam"
+            value={homeTeam}
+            onChange={handleHomeTeamInputChange}
+            fullWidth
+            margin="normal"
             sx={{
-              display: 'flex',
-              width: '100%',
-              flexDirection: 'row',
-              justifyContent: 'center',
-            }}>
-            <Container
-              disableGutters
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'left',
-              }}>
-              <strong>Male ({malesOnField.length})</strong>
-              <List>
-                {malesOnField.map(player => (
-                  <ListItem key={player.id}>
-                    {getPlayerIndex(males, player.id)}. {player.name}
-                  </ListItem>
-                ))}
-              </List>
-            </Container>
-            <Container
-              disableGutters
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'left',
-                p: 0,
-              }}>
-              <strong>Female ({femalesOnField.length})</strong>
-              <List>
-                {femalesOnField.map(player => (
-                  <ListItem key={player.id}>
-                    {getPlayerIndex(females, player.id)}. {player.name}
-                  </ListItem>
-                ))}
-              </List>
-            </Container>
-          </Container>
-
-          <Button variant="contained" onClick={handleOpen}>Next Point</Button>
+              marginBottom: '1rem',
+            }}
+          />
+          <TextField
+            label="Opponent's team name"
+            name="opponentTeam"
+            value={awayTeam}
+            onChange={handleAwayTeamInputChange}
+            fullWidth
+            margin="normal"
+            sx={{
+              marginBottom: '1rem',
+            }}
+          />
+          <p>Starting Gender Ratio on the Field:</p>
+          <ToggleButtonGroup
+            color="primary"
+            value={startingRatio}
+            exclusive
+            onChange={handleGenderChange}
+            aria-label="Platform"
+          >
+            <ToggleButton value="female">Female</ToggleButton>
+            <ToggleButton value="male">Male</ToggleButton>
+          </ToggleButtonGroup>
+          <br />
+          <Button color="primary" variant="contained" onClick={handleStartGame}>Start Game</Button>
         </div>
-      }
+        }
+        {pointsPlayed >= 0 &&
+          <div>
+            <div className="scoreboard">
+              <div>
+                {homeTeam}: {homeScore}
+              </div>
+              <div>
+                {awayTeam}: {awayScore}
+              </div>
+            </div>
+            <h2 className='centerHeader'>Point #{pointsPlayed + 1}</h2>
+            <Container
+              disableGutters
+              sx={{
+                display: 'flex',
+                width: '100%',
+                flexDirection: 'row',
+                justifyContent: 'center',
+              }}>
+              <Container
+                disableGutters
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'left',
+                }}>
+                <strong>Male ({malesOnField.length})</strong>
+                <List>
+                  {malesOnField.map(player => (
+                    <ListItem key={player.id}>
+                      {getPlayerIndex(males, player.id)}. {player.name}
+                    </ListItem>
+                  ))}
+                </List>
+              </Container>
+              <Container
+                disableGutters
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'left',
+                  p: 0,
+                }}>
+                <strong>Female ({femalesOnField.length})</strong>
+                <List>
+                  {femalesOnField.map(player => (
+                    <ListItem key={player.id}>
+                      {getPlayerIndex(females, player.id)}. {player.name}
+                    </ListItem>
+                  ))}
+                </List>
+              </Container>
+            </Container>
+
+            <Button variant="contained" fullWidth onClick={handleOpen} sx={{ margin: "0 auto", height: '48px' }}>Next Point</Button>
+          </div>
+        }
+      </Box>
+      <Box sx={{ display: 'flex', flex: '1', flexDirection: 'column' }}>
+        <Divider sx={{ margin: "1em" }} >
+          <Chip label="Menu" />
+        </Divider>
+        <Button
+          variant="contained"
+          onClick={() => navigate("/roster")}
+          fullWidth
+          sx={{
+            margin: '1em 0',
+          }}
+        >
+          Edit Roster
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => navigate("/advanced")}
+          fullWidth
+        >
+          Advanced
+        </Button>
+      </Box>
       <Modal
         open={open}
         onClose={handleClose}
@@ -337,7 +307,7 @@ const PlayerLineup: React.FC = () => {
           <Button variant="contained" onClick={handleLineupChange}>OK</Button>
         </Card>
       </Modal>
-    </div>
+    </Box>
   );
 };
 

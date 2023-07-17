@@ -48,6 +48,7 @@ export const gameSlice = createSlice({
             state.pointsPlayed = -1;
             state.maleIndex = 0;
             state.femaleIndex = 0;
+            state.countSinceLastRatioChange = 0;
             localStorage.setItem('game', JSON.stringify(state));
         },
         incrementPointsPlayed: (state) => {
@@ -148,6 +149,7 @@ export const {
     setHomeTeam,
     setAwayTeam,
     resetGame,
+    setScore,
 } = gameSlice.actions;
 
 export const {

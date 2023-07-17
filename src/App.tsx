@@ -1,6 +1,7 @@
 import { Routes, Route, Outlet, Link } from "react-router-dom";
 import PlayerRoster from "./PlayerRoster";
 import PlayerLineup from "./PlayerLineup";
+import Advanced from "./Advanced";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from '@mui/material/CssBaseline';
 
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index path="" element={<PlayerLineup />} />
             <Route path="roster" element={<PlayerRoster />} />
+            <Route path="advanced" element={<Advanced />} />
 
             {/* Using path="*"" means "match anything", so this route
                 acts like a catch-all for URLs that we don't have explicit

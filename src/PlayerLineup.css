@@ -4,3 +4,7 @@
   padding: 1em;
   align-items: end;
 }
+
+.centerHeader {
+  text-align: center;
+}
