@@ -7,7 +7,7 @@ import FormLabel from '@mui/material/FormLabel';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
-import { SelectChangeEvent } from "@mui/material";
+import { Box, SelectChangeEvent } from "@mui/material";
 import TextField from '@mui/material/TextField';
 
 // MUI Icons
@@ -16,11 +16,13 @@ import { addPlayer, removePlayer, selectPlayers } from './rosterSlice';
 import { GenderRatio, Player } from './Player';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { selectPointsPlayed } from './gameSlice';
 
 const PlayerRoster: React.FC = () => {
   const players = useSelector(selectPlayers);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const pointsPlayed = useSelector(selectPointsPlayed);
 
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerGender, setNewPlayerGender] = useState<GenderRatio>('male');
@@ -57,7 +59,7 @@ const PlayerRoster: React.FC = () => {
   }
 
   return (
-    <div>
+    <Box sx={{ margin: '1em' }}>
       <Button
         variant="contained"
         onClick={() => navigate("/")}
@@ -66,7 +68,7 @@ const PlayerRoster: React.FC = () => {
           margin: '1rem 0',
         }}
       >
-        Back to Game
+        {pointsPlayed <= 0 ? 'Start Game' : 'Back to Game'}
       </Button>
 
       <TextField
@@ -120,7 +122,7 @@ const PlayerRoster: React.FC = () => {
           </li>
         ))}
       </ul>
-    </div>
+    </Box>
   );
 };
 

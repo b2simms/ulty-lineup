@@ -122,6 +122,7 @@ const PlayerLineup: React.FC = () => {
     // reset indexes
     dispatch(setMaleIndex(0));
     dispatch(setFemaleIndex(0));
+    navigate('/roster');
   };
 
   const handleLineupChange = () => {
@@ -154,7 +155,7 @@ const PlayerLineup: React.FC = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', minWidth: '350px' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', minWidth: '350px', padding: '1em' }}>
       <Box sx={{ display: 'flex', flex: '3', flexDirection: 'column' }}>
         {pointsPlayed < 0 && <div>
           <TextField
@@ -187,11 +188,13 @@ const PlayerLineup: React.FC = () => {
             onChange={handleGenderChange}
             aria-label="Platform"
           >
-            <ToggleButton value="female">Female</ToggleButton>
-            <ToggleButton value="male">Male</ToggleButton>
+            <ToggleButton value="female">Female ({startingRatio === 'female' ? 4 : 3})</ToggleButton>
+            <ToggleButton value="male">Male ({startingRatio === 'male' ? 4 : 3})</ToggleButton>
           </ToggleButtonGroup>
           <br />
-          <Button color="primary" variant="contained" onClick={handleStartGame}>Start Game</Button>
+          <Button color="primary" fullWidth variant="contained" onClick={handleStartGame} sx={{ margin: '1em 0' }}>
+            Next: Review Roster
+          </Button>
         </div>
         }
         {pointsPlayed >= 0 &&

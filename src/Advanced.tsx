@@ -402,7 +402,7 @@ const PlayerLineup: React.FC = () => {
           <CloseIcon onClick={handleClose} sx={{ position: "absolute", top: "1em", right: "1em" }}></CloseIcon>
           <h2>Reset Game?</h2>
           <p>Resetting the game clears the score, the points are reset, and the line up is defaulted.</p>
-          <Button variant="contained" onClick={handleResetGame} sx={{ background: 'red' }}>OK</Button>
+          <Button variant="contained" fullWidth onClick={handleResetGame} sx={{ background: 'red' }}>OK</Button>
         </Card>
       </Modal>
     </Box >
