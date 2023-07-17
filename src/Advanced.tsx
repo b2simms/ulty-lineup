@@ -144,6 +144,9 @@ const PlayerLineup: React.FC = () => {
     dispatch(addScore('home'));
   };
   const handleRemoveHomeScore = () => {
+    if (homeScore === 0) {
+      return;
+    }
     dispatch(setScore({
       team: 'home',
       score: homeScore - 1,
@@ -153,6 +156,9 @@ const PlayerLineup: React.FC = () => {
     dispatch(addScore('away'));
   };
   const handleRemoveAwayScore = () => {
+    if (awayScore === 0) {
+      return;
+    }
     dispatch(setScore({
       team: 'away',
       score: awayScore - 1,
