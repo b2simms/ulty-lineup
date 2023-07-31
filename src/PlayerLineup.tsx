@@ -39,6 +39,10 @@ function getPlayersSubset(players: Player[], index: number, count: number): Play
   const startIndex = index % length;
   const endIndex = (index + count) % length;
 
+  if (players.length <= count) {
+    return players;
+  }
+
   if (startIndex < endIndex) {
     return players.slice(startIndex, endIndex);
   } else {
