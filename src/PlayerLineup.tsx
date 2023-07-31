@@ -1,6 +1,6 @@
 import './PlayerLineup.css';
 
-import { GenderRatio, Player, ScoreTypes } from './Player';
+import { GenderRatio, Player, ScoreTypes, getNextIndex, getNextRatio, getPlayersSubset } from './Player';
 
 import Button from "@mui/material/Button";
 import { selectPlayers } from './rosterSlice';
@@ -33,34 +33,6 @@ import { Box, Card, Chip, Container, Divider, List, ListItem, Modal, TextField, 
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-
-function getPlayersSubset(players: Player[], index: number, count: number): Player[] {
-  const length = players.length;
-  const startIndex = index % length;
-  const endIndex = (index + count) % length;
-
-  if (startIndex < endIndex) {
-    return players.slice(startIndex, endIndex);
-  } else {
-    return players.slice(startIndex).concat(players.slice(0, endIndex));
-  }
-}
-
-function getNextIndex(max: number, index: number, count: number): number {
-  return (index + count) % max;
-}
-
-function getNextRatio(current: GenderRatio, count: number): {
-  ratio: GenderRatio, count: number
-} {
-  const flipRatio = (i: GenderRatio) => i === 'male' ? 'female' : 'male';
-  const newRatio = count >= 1 ? flipRatio(current) : current;
-  const newCount = count >= 1 ? 0 : count + 1;
-  return {
-    ratio: newRatio,
-    count: newCount,
-  };
-}
 
 const PlayerLineup: React.FC = () => {
   const dispatch = useAppDispatch();

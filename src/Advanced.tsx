@@ -1,6 +1,6 @@
 import './PlayerLineup.css';
 
-import { GenderRatio, Player } from './Player';
+import { GenderRatio, Player, getPlayersSubset, getPreviousIndex, getPreviousRatio } from './Player';
 
 import Button from "@mui/material/Button";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -38,34 +38,6 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { selectThemeMode, toggleTheme } from './themeSlice';
-
-function getPlayersSubset(players: Player[], index: number, count: number): Player[] {
-  const length = players.length;
-  const startIndex = index % length;
-  const endIndex = (index + count) % length;
-
-  if (startIndex < endIndex) {
-    return players.slice(startIndex, endIndex);
-  } else {
-    return players.slice(startIndex).concat(players.slice(0, endIndex));
-  }
-}
-
-function getPreviousIndex(max: number, index: number, count: number): number {
-  return (index - count + max) % max;
-}
-
-function getPreviousRatio(current: GenderRatio, count: number): {
-  ratio: GenderRatio, count: number
-} {
-  const flipRatio = (i: GenderRatio) => i === 'male' ? 'female' : 'male';
-  const newRatio = count >= 1 ? current : flipRatio(current);
-  const newCount = count < 1 ? 1 : count - 1;
-  return {
-    ratio: newRatio,
-    count: newCount,
-  };
-}
 
 const PlayerLineup: React.FC = () => {
   const dispatch = useAppDispatch();

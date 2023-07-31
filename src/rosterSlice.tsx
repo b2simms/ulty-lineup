@@ -36,10 +36,29 @@ export const rosterSlice = createSlice({
             state.players = state.players.filter(player => player.id !== id);
             localStorage.setItem('players', JSON.stringify(state.players));
         },
+        updatePlayerName: (state, action: PayloadAction<{ id: number, name: string }>) => {
+            const { id, name } = action.payload;
+            const updatedPlayerList = state.players.map((item) => {
+                if (item.id === id) {
+                    // Merge the existing item with the updated data
+                    const tempPlayer = { ...item };
+                    tempPlayer.name = name
+                    return { ...item, ...tempPlayer };
+                }
+                return item;
+            });
+
+            localStorage.setItem('players', JSON.stringify(updatedPlayerList));
+
+            return {
+                ...state,
+                players: updatedPlayerList,
+            };
+        },
     },
 })
 
-export const { addPlayer, removePlayer } = rosterSlice.actions
+export const { addPlayer, removePlayer, updatePlayerName } = rosterSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 export const selectPlayers = (state: RootState) => state.roster.players;
