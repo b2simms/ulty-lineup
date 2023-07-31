@@ -12,7 +12,7 @@ import TextField from '@mui/material/TextField';
 
 // MUI Icons
 import { useAppDispatch } from './hooks';
-import { addPlayer, removePlayer, selectPlayers } from './rosterSlice';
+import { addPlayer, removePlayer, selectPlayers, updatePlayerName } from './rosterSlice';
 import { GenderRatio, Player } from './Player';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -50,6 +50,13 @@ const PlayerRoster: React.FC = () => {
     // update store
     dispatch(removePlayer(id));
   };
+
+  const handlePlayerNameEdit = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, id: number) => {
+    dispatch(updatePlayerName({
+      id,
+      name: event.target.value,
+    }));
+  }
 
   const malePlayers = players.filter(player => player.gender === 'male');
   const femalePlayers = players.filter(player => player.gender === 'female');
@@ -105,24 +112,44 @@ const PlayerRoster: React.FC = () => {
       </Button>
 
       <h2>Male Players ({malePlayers.length})</h2>
-      <ul>
-        {malePlayers.map(player => (
-          <li key={player.id}>
-            {getPlayerIndex(malePlayers, player.id)}. {player.name}
+      {malePlayers.map(player => (
+        <Box key={player.id} sx={{ display: 'flex' }}>
+          <Box sx={{ flex: '3', padding: '0.5em' }}>
+            {getPlayerIndex(malePlayers, player.id)}.
+            <TextField
+              id="outlined-basic"
+              variant="outlined"
+              type="text"
+              value={player.name}
+              onChange={(e) => handlePlayerNameEdit(e, player.id)}
+              placeholder="Enter player name"
+            />
+          </Box>
+          <Box sx={{ flex: '1', textAlign: 'end' }}>
             <Button onClick={() => handleRemovePlayer(player.id)}>Remove</Button>
-          </li>
-        ))}
-      </ul>
+          </Box>
+        </Box>
+      ))}
       <h2>Female Players ({femalePlayers.length})</h2>
-      <ul>
-        {femalePlayers.map(player => (
-          <li key={player.id}>
-            {getPlayerIndex(femalePlayers, player.id)}. {player.name}
+      {femalePlayers.map(player => (
+        <Box key={player.id} sx={{ display: 'flex' }}>
+          <Box sx={{ flex: '3', padding: '0.5em' }}>
+            {getPlayerIndex(femalePlayers, player.id)}.
+            <TextField
+              id="outlined-basic"
+              variant="outlined"
+              type="text"
+              value={player.name}
+              onChange={(e) => handlePlayerNameEdit(e, player.id)}
+              placeholder="Enter player name"
+            />
+          </Box>
+          <Box sx={{ flex: '1', textAlign: 'end' }}>
             <Button onClick={() => handleRemovePlayer(player.id)}>Remove</Button>
-          </li>
-        ))}
-      </ul>
-    </Box>
+          </Box>
+        </Box>
+      ))}
+    </Box >
   );
 };
 
